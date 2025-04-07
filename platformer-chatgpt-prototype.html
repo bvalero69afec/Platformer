@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Jeu Plateforme - Saut + Rejouer</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      font-family: sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #eee;
+      border: 2px solid #444;
+    }
+    #gameOverScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      display: none;
+      z-index: 10;
+    }
+    button {
+      margin-top: 20px;
+      font-size: 1rem;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+
+<div id="gameOverScreen">
+  <div id="gameMessage">Fin du jeu</div>
+  <button onclick="restartGame()">Rejouer</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const gameMessage = document.getElementById('gameMessage');
+
+const keys = {
+    ArrowLeft: false,
+    ArrowRight: false,
+    ArrowUp: false
+};
+
+let player, spikes;
+let gameRunning = true;
+
+function initGame() {
+    player = {
+        x: 50,
+        y: 300,
+        width: 30,
+        height: 30,
+        color: 'blue',
+        speed: 3,
+        dx: 0,
+        dy: 0,
+        gravity: 0.5,
+        jumpForce: -10,
+        onGround: false
+    };
+
+    spikes = [];
+    for (let i = 200; i < 700; i += Math.random() * 100 + 50) {
+        spikes.push({ x: i, y: 330, width: 20, height: 20 });
+    }
+
+    gameRunning = true;
+    gameOverScreen.style.display = 'none';
+}
+
+function restartGame() {
+    initGame();
+    requestAnimationFrame(update);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key in keys) keys[e.key] = true;
+});
+document.addEventListener('keyup', e => {
+    if (e.key in keys) keys[e.key] = false;
+});
+
+function showGameOver(message) {
+    gameMessage.textContent = message;
+    gameOverScreen.style.display = 'flex';
+    gameRunning = false;
+}
+
+function update() {
+    if (!gameRunning) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Déplacement
+    player.dx = 0;
+    if (keys.ArrowRight) player.dx = player.speed;
+    if (keys.ArrowLeft) player.dx = -player.speed;
+
+    if (keys.ArrowUp && player.onGround) {
+        player.dy = player.jumpForce;
+        player.onGround = false;
+    }
+
+    // Gravité
+    player.dy += player.gravity;
+    player.x += player.dx;
+    player.y += player.dy;
+
+    // Sol
+    if (player.y + player.height >= 350) {
+        player.y = 350 - player.height;
+        player.dy = 0;
+        player.onGround = true;
+    }
+
+    // Dessin sol
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 350, canvas.width, 50);
+
+    // Joueur
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Pics
+    ctx.fillStyle = 'red';
+    for (let spike of spikes) {
+        ctx.beginPath();
+        ctx.moveTo(spike.x, spike.y + spike.height);
+        ctx.lineTo(spike.x + spike.width / 2, spike.y);
+        ctx.lineTo(spike.x + spike.width, spike.y + spike.height);
+        ctx.closePath();
+        ctx.fill();
+
+        // Collision
+        if (
+            player.x < spike.x + spike.width &&
+            player.x + player.width > spike.x &&
+            player.y < spike.y + spike.height &&
+            player.y + player.height > spike.y
+        ) {
+            showGameOver('💀 Perdu !');
+            return;
+        }
+    }
+
+    // Arrivée
+    ctx.fillStyle = 'gold';
+    ctx.fillRect(750, 300, 30, 50);
+    if (
+        player.x + player.width > 750 &&
+        player.x < 780 &&
+        player.y + player.height >= 300
+    ) {
+        showGameOver('🏆 Gagné !');
+        return;
+    }
+
+    requestAnimationFrame(update);
+}
+
+// Démarrer le jeu initialement
+initGame();
+update();
+</script>
+
+</body>
+</html>
