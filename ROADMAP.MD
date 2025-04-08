@@ -19,6 +19,7 @@ Base game:
 - Do movement physics. The player can go left side, right side and jump.
 - The world/player are continually under gravity.
 - We must have good collision behaviour.
+- Inform player when he win or lose.
 
 Improvement:
 - Sprites (we will need to rework the collision system).
