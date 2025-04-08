@@ -2,11 +2,11 @@ ROADMAP:
 
 
 Base game:
-- black background.
-- white filled square representing the player.
-- a continous white filled line (with some pixels for the height), at y like 1/4 of the canvas height starting from the bottom. This represent the floor.
+- Black background.
+- White filled square representing the player.
+- A continous white filled line (with some pixels for the height), at y like 1/4 of the canvas height starting from the bottom. This represent the floor.
 - The player spawn at the start close to the left border on the floor.
-- white filled triangles on the floor representing the spikes. 
+- White filled triangles on the floor representing the spikes. 
   They are randomly generated. 
   They must not be to close to the borders at the start or at the end to leave space and let the player breath.
   They must not be to close to each other when generated to let the player jump between them and so the level is winnable.
@@ -19,8 +19,9 @@ Base game:
 - Do movement physics. The player can go left side, right side and jump.
 - The world/player are continually under gravity.
 - We must have good collision behaviour.
+- Inform player when he win or lose.
 
 Improvement:
-Sprites (we will need to rework the collision system).
-Platform generated at different height (no continous floor).
-Big level with camera panning.
+- Sprites (we will need to rework the collision system).
+- Platform generated at different height (no continous floor).
+- Big level with camera panning.
