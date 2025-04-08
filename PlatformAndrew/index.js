@@ -78,6 +78,12 @@ const player = new Player({
         jump: {
             imageSrc: './img/warrior/Jump.png',
             frameRate: 2,
+            frameBuffer: 8,
+        },
+        fall: {
+            imageSrc: './img/warrior/Fall.png',
+            frameRate: 2,
+            frameBuffer: 8,
         },
     },
 })
@@ -122,12 +128,16 @@ function animate() {
     player.velocity.x = 0
     if (keys.ArrowRight.pressed) {
         player.switchSprite('run')
-        player.velocity.x = 5
+        player.velocity.x = 3
     }
-    else if (keys.ArrowLeft.pressed) player.velocity.x = -5
+    else if (keys.ArrowLeft.pressed) player.velocity.x = -3
     else if (player.velocity.y === 0) {
         player.switchSprite('idle')
     }
+    if (player.velocity.y < 0)
+        player.switchSprite('jump')
+    else if (player.velocity.y > 0)
+        player.switchSprite('fall')
 
     c.restore()
 }

@@ -27,7 +27,7 @@ class Player extends Sprite {
     }
 
     switchSprite(key) {
-        if (this.image === this.animations[key]) return
+        if (this.image === this.animations[key] || !this.loaded) return
 
         this.image = this.animations[key].image
         this.frameRate = this.animations[key].frameRate
@@ -39,12 +39,12 @@ class Player extends Sprite {
         this.updateHitBox()
 
         // Draws out image
-        c.fillStyle = 'rgba(0, 255, 0, 0.2)'
-        c.fillRect(this.position.x, this.position.y, this.width, this.height)
-        this.draw()
+        // c.fillStyle = 'rgba(0, 255, 0, 0.2)'
+        // c.fillRect(this.position.x, this.position.y, this.width, this.height)
+        // this.draw()
 
-        c.fillStyle = 'rgba(255, 0, 0, 0.2)'
-        c.fillRect(this.hitBox.position.x, this.hitBox.position.y, this.hitBox.width, this.hitBox.height)
+        // c.fillStyle = 'rgba(255, 0, 0, 0.2)'
+        // c.fillRect(this.hitBox.position.x, this.hitBox.position.y, this.hitBox.width, this.hitBox.height)
         
         this.draw()
 
@@ -100,8 +100,8 @@ class Player extends Sprite {
     }
 
     applyGravity() {
-        this.position.y += this.velocity.y
         this.velocity.y += gravity
+        this.position.y += this.velocity.y
     }
 
     checkForVerticalCollisions() {
