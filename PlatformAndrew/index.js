@@ -33,20 +33,53 @@ floorCollisions2D.forEach((row, y) => {
 })
 
 const platformCollisions2D = []
-for (let i = 0; i < floorCollisions.length; i += 40) {
-    floorCollisions2D.push(floorCollisions.slice(i, i + 40))
+for (let i = 0; i < platformCollisions.length; i += 40) {
+    platformCollisions2D.push(platformCollisions.slice(i, i + 40))
 }
+
+const platformCollisionBlocks = []
+platformCollisions2D.forEach((row, y) => {
+    row.forEach((symbol, x) => {
+        if (symbol === 1) {
+            console.log('draw a block here')
+            platformCollisionBlocks.push(new collisionBlock({
+                position: {
+                    x: x * 32, //32 = number of pixels of the collision block tile
+                    y: y * 32,
+                },
+            })
+            )
+        }
+    })
+})
 
 const gravity = 0.4
 
-//Position of player
+//Starting position of player
 const player = new Player({
-    x: 0,
-    y: 0,
-})
-const player2 = new Player({
-    x: 300,
-    y: 100,
+    position: {
+    x: 120,
+    y: 300,
+    },
+    collisionBlocks,
+    imageSrc: './img/warrior/Idle.png',
+    frameRate: 8,
+    animations: {
+        idle: {
+            imageSrc: './img/warrior/Idle.png',
+            frameRate: 8,
+            frameBuffer: 5,
+        },
+        run: {
+            imageSrc: './img/warrior/Run.png',
+            frameRate: 8,
+            frameBuffer: 5,
+        },
+        jump: {
+            imageSrc: './img/warrior/Jump.png',
+            frameRate: 2,
+        },
+    },
 })
 
 const keys = {
@@ -73,20 +106,30 @@ function animate() {
 
     c.save()
     c.scale(4, 4) //scale up background image for canvas
-    c.translate(0, -background.image.height + scaledCanvas.height) //Start background in bottom left
+    c.translate(0, -background.image.height + scaledCanvas.height + 100) //Starting view point of the background image
     background.update()
     collisionBlocks.forEach(collisionBlock => {
         collisionBlock.update()
     })
-    c.restore()
+
+    platformCollisionBlocks.forEach(block => {
+        block.update()
+    })
 
     player.update()
-    player2.update()
 
     //Change speed of movement
     player.velocity.x = 0
-    if (keys.ArrowRight.pressed) player.velocity.x = 5
+    if (keys.ArrowRight.pressed) {
+        player.switchSprite('run')
+        player.velocity.x = 5
+    }
     else if (keys.ArrowLeft.pressed) player.velocity.x = -5
+    else if (player.velocity.y === 0) {
+        player.switchSprite('idle')
+    }
+
+    c.restore()
 }
 
 animate()
@@ -100,7 +143,7 @@ window.addEventListener('keydown', (event) => {
             keys.ArrowLeft.pressed = true
             break
         case ' ':
-            player.velocity.y = -15  //Change jump height
+            player.velocity.y = -10  //Change jump height
             break
     }
 })
