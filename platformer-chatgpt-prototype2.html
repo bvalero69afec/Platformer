@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2D Platform Game - Continuous Spike Collision</title>
+  <style>
+    /* Webpage background set to beige; canvas centered */
+    body {
+      margin: 0;
+      background: beige;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    canvas {
+      background: black;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // --- CONFIGURATION ---
+    const CANVAS_WIDTH = canvas.width;
+    const CANVAS_HEIGHT = canvas.height;
+    const FLOOR_HEIGHT = CANVAS_HEIGHT / 4;  // Floor is 1/4 from bottom
+    const FLOOR_THICKNESS = 10;              // Floor's visual thickness
+
+    // Player parameters (rectangle)
+    const PLAYER_SIZE = 30;
+    const PLAYER_START_X = 50;
+    const PLAYER_START_Y = FLOOR_HEIGHT + PLAYER_SIZE; // Spawning on floor
+    const MOVE_SPEED = 3;
+    const JUMP_VELOCITY = 10;
+    const GRAVITY = 0.5;
+
+    // Spike parameters (triangles)
+    const SPIKE_WIDTH = 20;
+    const SPIKE_HEIGHT = 20;
+    const SIDE_BUFFER = 150;   // no spikes near spawn or finish
+    const MIN_SPIKE_GAP = 50;
+
+    // Game state flags
+    let gameOver = false;
+    let gameWon = false;
+
+    // --- PLAYER & SPIKES SETUP ---
+    // Our player is represented as a rectangle.
+    // We define the player's position using its top-left corner.
+    let player = {
+      x: PLAYER_START_X,
+      y: PLAYER_START_Y,
+      width: PLAYER_SIZE,
+      height: PLAYER_SIZE,
+      vx: 0,
+      vy: 0,
+      onGround: false,
+    };
+
+    // We'll use the player's bottom-left as the collision reference point.
+    function getPlayerBottomLeft(pos) {
+      // pos should have fields x and y (where y is top)
+      return { x: pos.x, y: pos.y - player.height };
+    }
+
+    // --- Helper: Convex Hull (using a basic Graham scan) ---
+    function convexHull(points) {
+      // Sort points by x, then y.
+      points.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
+      const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+      const lower = [];
+      for (const p of points) {
+        while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) {
+          lower.pop();
+        }
+        lower.push(p);
+      }
+      const upper = [];
+      for (let i = points.length - 1; i >= 0; i--) {
+        const p = points[i];
+        while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) {
+          upper.pop();
+        }
+        upper.push(p);
+      }
+      // Remove the last point of each list (it's the starting point of the other list)
+      lower.pop();
+      upper.pop();
+      return lower.concat(upper);
+    }
+
+    // --- Minkowski Sum for Continuous Collision with a Spike ---
+    // For the player's rectangle, define its "inverted" shape as:
+    const playerRectInverted = [
+      { x: 0, y: 0 },
+      { x: -player.width, y: 0 },
+      { x: -player.width, y: -player.height },
+      { x: 0, y: -player.height }
+    ];
+    
+    // For each spike (triangle) we compute its Minkowski sum with playerRectInverted.
+    // Spike triangle vertices (in world space) are defined as:
+    // A = (spike.x, spike.y)
+    // B = (spike.x + SPIKE_WIDTH, spike.y)
+    // C = (spike.x + SPIKE_WIDTH/2, spike.y + SPIKE_HEIGHT)
+    function computeExpandedSpike(spike) {
+      const spikeVerts = [
+        { x: spike.x, y: spike.y },
+        { x: spike.x + SPIKE_WIDTH, y: spike.y },
+        { x: spike.x + SPIKE_WIDTH/2, y: spike.y + SPIKE_HEIGHT }
+      ];
+      let sums = [];
+      for (const v of spikeVerts) {
+        for (const r of playerRectInverted) {
+          sums.push({ x: v.x + r.x, y: v.y + r.y });
+        }
+      }
+      // Compute convex hull of these 12 points:
+      return convexHull(sums);
+    }
+    
+    // Create spikes array. Each spike will have its original parameters and an expanded polygon.
+    const spikes = [];
+    (function generateSpikes() {
+      let x = SIDE_BUFFER;
+      while (x < CANVAS_WIDTH - SIDE_BUFFER - SPIKE_WIDTH) {
+        if (Math.random() < 0.6) {
+          let spike = {
+            x: x,
+            y: FLOOR_HEIGHT,  // base at the floor level
+            width: SPIKE_WIDTH,
+            height: SPIKE_HEIGHT
+          };
+          // Compute the expanded polygon for continuous collision detection.
+          spike.expanded = computeExpandedSpike(spike);
+          spikes.push(spike);
+          x += SPIKE_WIDTH + MIN_SPIKE_GAP + Math.random() * 30;
+        } else {
+          x += MIN_SPIKE_GAP;
+        }
+      }
+    })();
+
+    // --- INPUT HANDLING ---
+    const keys = {};
+    window.addEventListener("keydown", e => { keys[e.key] = true; });
+    window.addEventListener("keyup", e => { keys[e.key] = false; });
+
+    // --- Ray vs. Convex Polygon Intersection ---
+    // Returns the earliest t (0<=t<=1) at which a ray from rayOrigin along rayDir
+    // hits the polygon (given as an array of points ordered counterclockwise).
+    // If no collision, returns null.
+    function rayPolygonIntersection(rayOrigin, rayDir, poly) {
+      let tMin = Infinity;
+      // For each edge in the polygon
+      for (let i = 0; i < poly.length; i++) {
+        let a = poly[i];
+        let b = poly[(i+1) % poly.length];
+        // Edge vector:
+        let edge = { x: b.x - a.x, y: b.y - a.y };
+        // Outward normal is perpendicular (we assume poly is convex and points are in order)
+        let normal = { x: edge.y, y: -edge.x };
+        // Solve for intersection: rayOrigin + t * rayDir intersects edge
+        // using the formula: (rayOrigin + t*rayDir - a) dot normal = 0
+        // However, for a proper continuous collision detection for convex shapes via Minkowski sum,
+        // one can use the “separating axis theorem” approach, but here a simplified ray-vs-edge test suffices.
+        // Compute denominator = rayDir dot normal. If ~0, ray is parallel to edge.
+        let denom = rayDir.x * normal.x + rayDir.y * normal.y;
+        if (Math.abs(denom) < 1e-6) continue;
+        let t = -((rayOrigin.x - a.x) * normal.x + (rayOrigin.y - a.y) * normal.y) / denom;
+        // Also compute u along the edge:
+        let intersectionPoint = { x: rayOrigin.x + rayDir.x * t, y: rayOrigin.y + rayDir.y * t };
+        // Check if intersection lies on the edge (project onto edge vector)
+        // Here we solve for u such that a + u*edge = intersectionPoint.
+        let edgeLenSq = edge.x * edge.x + edge.y * edge.y;
+        let u = ((intersectionPoint.x - a.x) * edge.x + (intersectionPoint.y - a.y) * edge.y) / edgeLenSq;
+        if (u >= 0 && u <= 1 && t >= 0 && t <= 1) {
+          tMin = Math.min(tMin, t);
+        }
+      }
+      return tMin === Infinity ? null : tMin;
+    }
+
+    // --- Continuous Spike Collision Detection for the Player ---
+    // For each spike, treat the player's bottom-left as a point moving from oldPos to newPos.
+    // Then check for intersection with the spike's expanded polygon (precomputed).
+    // Return the smallest collision fraction t among all spikes.
+    function checkSpikeCollisionContinuous(oldPos, newPos) {
+      let movement = { x: newPos.x - oldPos.x, y: newPos.y - oldPos.y };
+      let minT = 1;
+      for (const spike of spikes) {
+        let t = rayPolygonIntersection(oldPos, movement, spike.expanded);
+        if (t !== null && t < minT) {
+          minT = t;
+        }
+      }
+      return minT;
+    }
+    
+    // --- GAME LOGIC ---
+    function update() {
+      if (gameOver) return;
+      
+      // Save player's old position (we use bottom-left as reference)
+      const oldPos = getPlayerBottomLeft(player);
+
+      // Horizontal input:
+      if (keys["ArrowLeft"] || keys["a"]) {
+        player.vx = -MOVE_SPEED;
+      } else if (keys["ArrowRight"] || keys["d"]) {
+        player.vx = MOVE_SPEED;
+      } else {
+        player.vx = 0;
+      }
+      
+      // Jump (if on floor):
+      if ((keys["ArrowUp"] || keys["w"] || keys[" "]) && player.onGround) {
+        player.vy = JUMP_VELOCITY;
+        player.onGround = false;
+      }
+      
+      // Apply gravity:
+      player.vy -= GRAVITY;
+      
+      // --- Axis-Separated Resolution for Walls and Floor ---
+      // Horizontal:
+      let candidateX = player.x + player.vx;
+      if (candidateX < 0) {
+        candidateX = 0;
+        player.vx = 0;
+      }
+      if (candidateX + player.width > CANVAS_WIDTH) {
+        candidateX = CANVAS_WIDTH - player.width;
+        gameOver = true;
+        gameWon = true;
+      }
+      player.x = candidateX;
+      
+      // Vertical:
+      let candidateY = player.y + player.vy;
+      if (candidateY - player.height < FLOOR_HEIGHT) {
+        candidateY = FLOOR_HEIGHT + player.height;
+        player.vy = 0;
+        player.onGround = true;
+      } else {
+        player.onGround = false;
+      }
+      player.y = candidateY;
+
+      // Continuous spike collision detection:
+      const newPos = getPlayerBottomLeft(player);
+      const tCollision = checkSpikeCollisionContinuous(oldPos, newPos);
+      if (tCollision < 1) {
+        // Move player's bottom-left to the collision point:
+        const collidingPos = {
+          x: oldPos.x + (newPos.x - oldPos.x) * tCollision,
+          y: oldPos.y + (newPos.y - oldPos.y) * tCollision
+        };
+        // Adjust player's top-left accordingly:
+        player.x = collidingPos.x;
+        player.y = collidingPos.y + player.height;
+        gameOver = true;
+      }
+      
+      // Fallback: if player falls out of bounds, game over.
+      if (player.y - player.height <= 0) {
+        gameOver = true;
+      }
+    }
+    
+    // --- DRAWING ---
+    function draw() {
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.save();
+      ctx.translate(0, CANVAS_HEIGHT);
+      ctx.scale(1, -1);
+      
+      // Draw floor:
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, FLOOR_HEIGHT - FLOOR_THICKNESS, CANVAS_WIDTH, FLOOR_THICKNESS);
+      
+      // Draw spikes (as white triangles):
+      for (const spike of spikes) {
+        ctx.beginPath();
+        ctx.moveTo(spike.x, spike.y);
+        ctx.lineTo(spike.x + SPIKE_WIDTH, spike.y);
+        ctx.lineTo(spike.x + SPIKE_WIDTH/2, spike.y + SPIKE_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+      }
+      
+      // Draw the player as a purple square:
+      ctx.fillStyle = "purple";
+      ctx.fillRect(player.x, player.y - player.height, player.width, player.height);
+      
+      // Draw win/lose message if needed.
+      if (gameOver) {
+        ctx.fillStyle = "yellow";
+        ctx.font = "48px sans-serif";
+        ctx.textAlign = "center";
+        const text = gameWon ? "You Win!" : "You Lose!";
+        ctx.save();
+        ctx.scale(1, -1);
+        ctx.fillText(text, CANVAS_WIDTH/2, -CANVAS_HEIGHT/2);
+        ctx.restore();
+      }
+      
+      ctx.restore();
+    }
+    
+    // --- GAME LOOP ---
+    function gameLoop() {
+      update();
+      draw();
+      if (!gameOver) {
+        requestAnimationFrame(gameLoop);
+      }
+    }
+    
+    gameLoop();
+  </script>
+</body>
+</html>
