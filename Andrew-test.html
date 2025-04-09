@@ -34,8 +34,8 @@
             speed: 2,
             velocityX: 0,
             velocityY: 0,
-            jumpForce: 11,
-            gravity: 0.6,
+            jumpForce: 6,
+            gravity: 0.2,
             isJumping: false,
             draw: function(){
                 ctx.fillStyle = '#9800ff';
@@ -52,6 +52,9 @@
         const obstacleMinGap = 100;
         const obstacles = [];
 
+        let gameWon = false;
+        let gameOver = false;
+
         // Event listeners for key presses
         window.addEventListener('keydown', function(event) {
             keys[event.key] = true;
@@ -61,12 +64,13 @@
         });
 
         function update() {
+            if (gameWon || gameOver) return; // Stop updating if game is won or over
 
             if (keys['ArrowRight']) {
-                player.velocityX += player.speed;
+                player.velocityX = player.speed;
             }
             if (keys['ArrowLeft']) {
-                player.velocityX -= player.speed;
+                player.velocityX = -player.speed;
             }
             if (keys['ArrowUp'] && !player.isJumping) { // Jump only if on the ground
                 player.velocityY = player.jumpForce;
@@ -132,6 +136,17 @@
 
             player.draw();
 
+            if (gameOver) {
+                ctx.fillStyle = "yellow";
+                ctx.font = "48px sans-serif";
+                ctx.textAlign = "center";
+                const text = gameWon ? "You Win!" : "Game Over!";
+                ctx.save();
+                ctx.scale(1, -1);
+                ctx.fillText(text, CANVAS_WIDTH / 2, -CANVAS_HEIGHT / 2);
+                ctx.restore();
+            }
+
             //restore original coordinates so we can draw the rest of the game
             ctx.restore();
         }
@@ -139,7 +154,9 @@
         function gameLoop() {
             update();
             draw();
-            requestAnimationFrame(gameLoop);
+            if (!gameWon && !gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
         }
 
         gameLoop();
