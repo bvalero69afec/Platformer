@@ -15,26 +15,127 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
     <script>
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Transform the coordinates to put (0,0) at bottom left
-        ctx.save();
-        ctx.translate(0, canvas.height);
-        ctx.scale(1, -1);
-        
-        // Draw a white rectangular floor at the bottom
+
+        const worldWidth = 3000;
+        let cameraPosition = 0;
+
+        const player = {
+            x: 50,
+            y: 120,
+            size: 30,
+            speed: 3,
+            velocityY: 0,
+            jumpForce: 12,
+            gravity: 0.6,
+            isJumping: false,
+            draw: function(){
+                ctx.fillStyle = 'white';
+                ctx.fillRect(this.x - cameraPosition, this.y, this.size, this.size);
+            }
+        }
+
         const floorHeight = 20;
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 100, canvas.width, floorHeight);
+        const floorY = 100;
+        const keys = {};
+
+        const obstacleSize = 20;
+        const sideBuffer = 150
+        const obstacleMinGap = 100;
+        const obstacles = [];
+
+        // Event listeners for key presses
+        window.addEventListener('keydown', function(event) {
+            keys[event.key] = true;
+        });
+        window.addEventListener('keyup', function(event) {
+            keys[event.key] = false;
+        });
+
+        function update() {
+
+            if (keys['ArrowRight']) {
+                player.x += player.speed;
+            }
+            if (keys['ArrowLeft']) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowUp'] && !player.isJumping) { // Jump only if on the ground
+                player.velocityY = player.jumpForce;
+                player.isJumping = true;
+            }
+
+                player.velocityY -= player.gravity; // Apply gravity immediately after jump
+                player.y += player.velocityY; // Move player up
+            
+            // Check for collision with the floor
+            if (player.y <= floorY + floorHeight) {
+                player.y = floorY + floorHeight;
+                player.velocityY = 0;
+                player.isJumping = false; // Reset jumping state
+            }
+
+            // Check for collision with the walls
+            if (player.x < 0) {
+                player.x = 0;
+            }
+            if (player.x + player.size > worldWidth) {
+                player.x = worldWidth - player.size;
+            }
+
+            const centerCamera = player.x - canvas.width / 2 + player.size / 2;
+            cameraPosition += (centerCamera - cameraPosition) * 0.1; // Smooth camera movement
+            cameraPosition = Math.max(0, Math.min(cameraPosition, worldWidth - canvas.width)); // Clamp camera position
+        }
         
+        // Generate obstacles
+        let obstacleX = sideBuffer;
+        while (obstacleX < worldWidth - sideBuffer - obstacleSize) { //gives stopping point
+            if (Math.random() < 0.5) { // % chance to create an obstacle
+                obstacles.push(obstacleX); //if obstacle is placed, jumps ahead
+                obstacleX += obstacleSize + obstacleMinGap;
+            } else {
+                obstacleX += obstacleMinGap; //else only moves min gap
+            }
+        }
+
+        function gameLoop() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            update();
+
+            // Transform the coordinates to put (0,0) at bottom left
+            ctx.save();
+            ctx.translate(0, canvas.height);
+            ctx.scale(1, -1);
+
+            // Draw a white rectangular floor at the bottom
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0 - cameraPosition, floorY, worldWidth, floorHeight);
+
+            // Draw obstacles
+            ctx.fillStyle = 'blue';
+            for (let x of obstacles) {
+                ctx.fillRect(x - cameraPosition, floorY + floorHeight, obstacleSize, obstacleSize);
+            }
+
+            player.draw();
+
+            //restore original coordinates so we can draw the rest of the game
+            ctx.restore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
     </script>
 </body>
 </html>
