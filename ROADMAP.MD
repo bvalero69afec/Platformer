@@ -17,7 +17,7 @@ Base game:
 - When the player collide with the obstacle, it's loss.
 - For game logic and readability, we should use the origin at the bottom left of the canvas for x and y position, so it's start at 0 there. Not the top left one which is used for the canvas. We should translate the position between them.
 - Do movement physics using a direction vector. Then add it to the player position.
-  The player can go left side, right side and jump
+  The player can go left side, right side and jump.
   The world/player are continually under gravity.
 - Use a simple discrete collision detection.
 - Inform player when he win or lose.
