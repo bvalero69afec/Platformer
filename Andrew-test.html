@@ -31,13 +31,14 @@
             x: 50,
             y: 120,
             size: 30,
-            speed: 3,
+            speed: 2,
+            velocityX: 0,
             velocityY: 0,
-            jumpForce: 12,
+            jumpForce: 11,
             gravity: 0.6,
             isJumping: false,
             draw: function(){
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = '#9800ff';
                 ctx.fillRect(this.x - cameraPosition, this.y, this.size, this.size);
             }
         }
@@ -62,18 +63,20 @@
         function update() {
 
             if (keys['ArrowRight']) {
-                player.x += player.speed;
+                player.velocityX += player.speed;
             }
             if (keys['ArrowLeft']) {
-                player.x -= player.speed;
+                player.velocityX -= player.speed;
             }
             if (keys['ArrowUp'] && !player.isJumping) { // Jump only if on the ground
                 player.velocityY = player.jumpForce;
                 player.isJumping = true;
             }
 
-                player.velocityY -= player.gravity; // Apply gravity immediately after jump
-                player.y += player.velocityY; // Move player up
+            player.velocityY -= player.gravity; // Apply gravity immediately after jump
+            player.y += player.velocityY; // Move player up
+            player.x += player.velocityX; // Move player left/right
+            player.velocityX *= 0.3; // Friction to slow down the player
             
             // Check for collision with the floor
             if (player.y <= floorY + floorHeight) {
@@ -106,8 +109,8 @@
             }
         }
 
-        function gameLoop() {
-            ctx.fillStyle = 'black';
+        function draw() { 
+            ctx.fillStyle = '#41ceff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             update();
@@ -118,11 +121,11 @@
             ctx.scale(1, -1);
 
             // Draw a white rectangular floor at the bottom
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = '#7f5400';
             ctx.fillRect(0 - cameraPosition, floorY, worldWidth, floorHeight);
 
             // Draw obstacles
-            ctx.fillStyle = 'blue';
+            ctx.fillStyle = '#ff0000';
             for (let x of obstacles) {
                 ctx.fillRect(x - cameraPosition, floorY + floorHeight, obstacleSize, obstacleSize);
             }
@@ -131,7 +134,11 @@
 
             //restore original coordinates so we can draw the rest of the game
             ctx.restore();
+        }
 
+        function gameLoop() {
+            update();
+            draw();
             requestAnimationFrame(gameLoop);
         }
 
