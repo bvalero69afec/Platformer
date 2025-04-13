@@ -23,15 +23,6 @@ function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap,
   }
 }
 
-function updatePlayerOnGroundStatus(world) {
-  const player = world.player;
-  if (player.y === world.groundY) {
-    player.onGround = true;
-  } else {
-    player.onGround = false;
-  }
-}
-
 function spawnPlayer(world, width, height, speed, jumpForce) {
   world.player = {
     x: world.spawnpointX,
