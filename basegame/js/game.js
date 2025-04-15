@@ -22,19 +22,22 @@ const FLOOR_HEIGHT = 20;
 const SPAWNPOINT_X = 50;
 const SPAWNPOINT_Y = 100;
 
+const WORLD_WIDTH = 3000;
+
 let world;
 
 let gameState;
 
 function initGame() {
   world = {
-    width: canvas.width,
+    width: WORLD_WIDTH,
     height: canvas.height,
     gravity: GRAVITY,
     groundY: GROUND_Y,
     floorHeight: FLOOR_HEIGHT,
     spawnpointX: SPAWNPOINT_X,
-    spawnpointY: SPAWNPOINT_Y
+    spawnpointY: SPAWNPOINT_Y,
+    cameraX: 0
   };
 
   generateObstacles(world, OBSTACLE_WIDTH, OBSTACLE_HEIGHT, MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP,
@@ -48,6 +51,12 @@ function initGame() {
 function updateGame() {
   if (gameState === GAMESTATE_IN_PROGRESS) {
     gameState = updatePlayerPhysics(world);
+
+    const player = world.player;
+    const margin = 100;
+    const screenCenter = canvas.width / 2;
+
+    world.cameraX = Math.max(0, Math.min(world.width - canvas.width, player.x - screenCenter + margin));
   }
 }
 
