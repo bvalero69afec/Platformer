@@ -23,6 +23,7 @@ const SPAWNPOINT_X = 50;
 const SPAWNPOINT_Y = 100;
 
 const WORLD_WIDTH = 3000;
+const CAMERA_MARGIN = 100;
 
 let world;
 
@@ -51,18 +52,12 @@ function initGame() {
 function updateGame() {
   if (gameState === GAMESTATE_IN_PROGRESS) {
     gameState = updatePlayerPhysics(world);
-
-    const player = world.player;
-    const margin = 100;
-    const screenCenter = canvas.width / 2;
-
-    world.cameraX = Math.max(0, Math.min(world.width - canvas.width, player.x - screenCenter + margin));
   }
 }
 
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawWorld(ctx, world);
+  drawWorld(ctx, world, canvas.width, CAMERA_MARGIN);
   if (gameState === GAMESTATE_WIN || gameState === GAMESTATE_LOSE) {
     let text;
     if (gameState === GAMESTATE_WIN) {

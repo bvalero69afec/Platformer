@@ -1,45 +1,64 @@
-function drawBackground(ctx, world) {
+function drawBackground(ctx, world, canvasWidth, margin) {
   ctx.save();
   ctx.translate(0, world.height);
   ctx.scale(1, -1);
   ctx.fillStyle = 'lightblue';
-  ctx.fillRect(-world.cameraX, 0, world.width, world.height);
+
+  const player = world.player;
+  const screenCenter = canvasWidth / 2;
+  const cameraX = Math.max(0, Math.min(world.width - canvasWidth, player.x - screenCenter + margin));
+
+  ctx.fillRect(-cameraX, 0, world.width, world.height);
   ctx.restore();
 }
 
-function drawFloor(ctx, world) {
+function drawFloor(ctx, world, canvasWidth, margin) {
   ctx.save();
   ctx.translate(0, world.height);
   ctx.scale(1, -1);
   ctx.fillStyle = 'brown';
-  ctx.fillRect(-world.cameraX, world.groundY - world.floorHeight, world.width, world.floorHeight);
+
+  const player = world.player;
+  const screenCenter = canvasWidth / 2;
+  const cameraX = Math.max(0, Math.min(world.width - canvasWidth, player.x - screenCenter + margin));
+
+  ctx.fillRect(-cameraX, world.groundY - world.floorHeight, world.width, world.floorHeight);
   ctx.restore();
 }
 
-function drawObstacles(ctx, world) {
+function drawObstacles(ctx, world, canvasWidth, margin) {
   ctx.save();
   ctx.translate(0, world.height);
   ctx.scale(1, -1);
   ctx.fillStyle = 'red';
+
+  const player = world.player;
+  const screenCenter = canvasWidth / 2;
+  const cameraX = Math.max(0, Math.min(world.width - canvasWidth, player.x - screenCenter + margin));
+
   for (const obstacle of world.obstacles) {
-    ctx.fillRect(obstacle.x - world.cameraX, obstacle.y, obstacle.width, obstacle.height);
+    ctx.fillRect(obstacle.x - cameraX, obstacle.y, obstacle.width, obstacle.height);
   }
   ctx.restore();
 }
 
-function drawPlayer(ctx, world) {
+function drawPlayer(ctx, world, canvasWidth, margin) {
   ctx.save();
   ctx.translate(0, world.height);
   ctx.scale(1, -1);
   ctx.fillStyle = 'purple';
+
   const player = world.player;
-  ctx.fillRect(player.x - world.cameraX, player.y, player.width, player.height);
+  const screenCenter = canvasWidth / 2;
+  const cameraX = Math.max(0, Math.min(world.width - canvasWidth, player.x - screenCenter + margin));
+
+  ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
   ctx.restore();
 }
 
-function drawWorld(ctx, world) {
-  drawBackground(ctx, world);
-  drawFloor(ctx, world);
-  drawObstacles(ctx, world);
-  drawPlayer(ctx, world);
+function drawWorld(ctx, world, canvasWidth, margin) {
+  drawBackground(ctx, world, canvasWidth, margin);
+  drawFloor(ctx, world, canvasWidth, margin);
+  drawObstacles(ctx, world, canvasWidth, margin);
+  drawPlayer(ctx, world, canvasWidth, margin);
 }
