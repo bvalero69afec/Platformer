@@ -1,14 +1,13 @@
 function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap, maxObstacleGap,
-                           obstaclesStartMinX, obstaclesRightBorderX) {
+                           obstacleAreaX, obstacleAreaWidth) {
   world.obstacles = [];
   const randomGapMax = maxObstacleGap - minObstacleGap;
-  const endMaxX = obstaclesRightBorderX - obstacleWidth;
-  let obstacleX = obstaclesStartMinX;
-  while (true)
-  {
+  const obstacleXMax = obstacleAreaX + obstacleAreaWidth - obstacleWidth;
+  let obstacleX = obstacleAreaX;
+  while (true) {
     const randomGap = getRandomArbitrary(0, randomGapMax);
     obstacleX += randomGap;
-    if (obstacleX > endMaxX) {
+    if (obstacleX > obstacleXMax) {
       break;
     }
     const obstacle = {
