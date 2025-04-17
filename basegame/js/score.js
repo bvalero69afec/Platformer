@@ -1,5 +1,9 @@
 function calculatePlayerScore(world, obstacleAreaX, obstacleAreaWidth) {
   const player = world.player;
 
-  return Math.floor(mathClamp(player.x - obstacleAreaX, 0, obstacleAreaWidth));
+  const playerXClampedAtMin = Math.max(player.x, obstacleAreaX);
+  const distanceToObstacleAreaStart = playerXClampedAtMin - obstacleAreaX;
+  const distanceClampedToObstacleArea = Math.min(distanceToObstacleAreaStart, obstacleAreaWidth);
+  const flooredClampedDistance = Math.floor(distanceClampedToObstacleArea);
+  return flooredClampedDistance;
 }

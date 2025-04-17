@@ -23,7 +23,7 @@ const FLOOR_HEIGHT = 20;
 const SPAWNPOINT_X = 50;
 const SPAWNPOINT_Y = 100;
 
-const CAMERA_MARGIN_X = 100;
+const CAMERA_CANVAS_CENTER_X_OFFSET = -100;
 
 const SCORE_TEXT = 'Score: {score}';
 const SCORE_TEXT_FONT = '20px sans-serif';
@@ -71,7 +71,8 @@ function updateGame() {
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawWorld(ctx, world, canvas.width, CAMERA_MARGIN_X);
+  const playerCameraX = calculatePlayerCameraX(world, canvas.width, CAMERA_CANVAS_CENTER_X_OFFSET);
+  drawWorld(ctx, world, playerCameraX, 0);
 
   const score = calculatePlayerScore(world, START_AREA_WIDTH, OBSTACLE_AREA_WIDTH);
   const scoreFinalText = SCORE_TEXT.replace('{score}', score);
