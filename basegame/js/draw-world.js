@@ -1,10 +1,23 @@
-function calculatePlayerCameraX(world, canvasWidth, cameraCanvasCenterXOffset) {
+function calculatePlayerCameraX(world, cameraWidth, cameraCenterOffsetX) {
   const player = world.player;
-  const canvasCenterX = canvasWidth / 2;
-  //Center the camera on the player but account for the offset
-  const cameraX = mathClamp(player.x - (canvasCenterX + cameraCanvasCenterXOffset), 0, world.width - canvasWidth);
-  return cameraX;
+  const cameraCenterX = cameraWidth  / 2;
+  const playerXCameraStartPanning = cameraCenterX + cameraCenterOffsetX;
+  const cameraXMax = Math.max(world.width, cameraWidth) - cameraWidth;
+  const playerXCameraEndPanning = cameraXMax + playerXCameraStartPanning;
+
+  let playerXClamped;
+  if (player.x < playerXCameraStartPanning) {
+    playerXClamped = playerXCameraStartPanning;
+  } else if (player.x > playerXCameraEndPanning) {
+    playerXClamped = playerXCameraEndPanning;
+  } else {
+    playerXClamped = player.x;
+  }
+
+  // playerXClamped is now guaranteed in [playerXCameraStartPanning, playerXCameraEndPanning], so (playerXClamped - playerXCameraStartPanning) is in [0, cameraXMax]
+  return playerXClamped - playerXCameraStartPanning;
 }
+
 
 function drawBackground(ctx, world, cameraX, cameraY) {
   ctx.save();

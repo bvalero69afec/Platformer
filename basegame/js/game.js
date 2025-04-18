@@ -23,7 +23,7 @@ const FLOOR_HEIGHT = 20;
 const SPAWNPOINT_X = 50;
 const SPAWNPOINT_Y = 100;
 
-const CAMERA_CANVAS_CENTER_X_OFFSET = -100;
+const PLAYER_CAMERA_CENTER_OFFSET_X = -100;
 
 const SCORE_TEXT = 'Score: {score}';
 const SCORE_TEXT_FONT = '20px sans-serif';
@@ -73,7 +73,7 @@ function updateGame() {
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Calculate the camera position based on the player's position
-  const playerCameraX = calculatePlayerCameraX(world, canvas.width, CAMERA_CANVAS_CENTER_X_OFFSET);
+  const playerCameraX = calculatePlayerCameraX(world, canvas.width, PLAYER_CAMERA_CENTER_OFFSET_X);
   // Draw the world using the camera position
   drawWorld(ctx, world, playerCameraX, 0);
 
