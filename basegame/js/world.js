@@ -3,10 +3,11 @@ function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap,
   world.obstacles = [];
   const randomGapMax = maxObstacleGap - minObstacleGap;
   const obstacleXMax = obstacleAreaX + obstacleAreaWidth - obstacleWidth;
-  let obstacleX = obstacleAreaX;
+  let obstacleX = obstacleAreaX; // Start at the beginning of the obstacle area
   while (true) {
     const randomGap = getRandomArbitrary(0, randomGapMax);
     obstacleX += randomGap;
+    // Check if the next obstacle would be outside the obstacle area
     if (obstacleX > obstacleXMax) {
       break;
     }
@@ -17,8 +18,8 @@ function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap,
       height: obstacleHeight
     };
     world.obstacles.push(obstacle);
-    obstacleX += obstacleWidth;
-    obstacleX += minObstacleGap;
+    obstacleX += obstacleWidth; // Move to the right edge of the current obstacle
+    obstacleX += minObstacleGap; // Add the minimum gap before the next obstacle
   }
 }
 

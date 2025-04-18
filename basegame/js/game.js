@@ -14,7 +14,7 @@ const MIN_OBSTACLE_GAP = 50;
 const MAX_OBSTACLE_GAP = 100;
 const OBSTACLE_AREA_WIDTH = 3000;
 
-const START_AREA_WIDTH = 150;
+const START_AREA_WIDTH = 150; //Create safe zone for player to spawn
 const END_AREA_WIDTH = 150;
 
 const GROUND_Y = 100;
@@ -45,7 +45,7 @@ let gameState;
 
 function initGame() {
   world = {
-    width: START_AREA_WIDTH + OBSTACLE_AREA_WIDTH + END_AREA_WIDTH,
+    width: START_AREA_WIDTH + OBSTACLE_AREA_WIDTH + END_AREA_WIDTH, // Total width of the world
     height: canvas.height,
     gravity: GRAVITY,
     groundY: GROUND_Y,
@@ -70,8 +70,9 @@ function updateGame() {
 
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+// Calculate the camera position based on the player's position
   const playerCameraX = calculatePlayerCameraX(world, canvas.width, CAMERA_CANVAS_CENTER_X_OFFSET);
+  // Draw the world using the camera position
   drawWorld(ctx, world, playerCameraX, 0);
 
   const score = calculatePlayerScore(world, START_AREA_WIDTH, OBSTACLE_AREA_WIDTH);

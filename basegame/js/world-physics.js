@@ -2,6 +2,7 @@ function updatePlayerVelocity(world) {
   const player = world.player;
   const controls = player.controls;
 
+  // Update player velocity based on controls
   if (controls.moveLeft && !controls.moveRight) {
     player.velocityX = -player.speed;
   } else if (controls.moveRight && !controls.moveLeft) {
@@ -16,6 +17,7 @@ function updatePlayerVelocity(world) {
   player.velocityY -= world.gravity;
 }
 
+//Update player position based on velocity
 function updatePlayerPosition(world) {
   const player = world.player;
   player.x += player.velocityX;
