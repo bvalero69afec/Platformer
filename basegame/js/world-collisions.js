@@ -52,7 +52,9 @@ function handlePlayerObstaclesCollision(world) {
   };
   for (const obstacle of world.obstacles) {
       if (isRectangleCollidingRectangle(playerNewPosRect, obstacle)) {
-          return GAMESTATE_LOSE;
+          if (!player.cheats.invincible) {
+            return GAMESTATE_LOSE;
+          }
       }
   }
 

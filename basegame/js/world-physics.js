@@ -10,7 +10,7 @@ function updatePlayerVelocity(world) {
   } else {
     player.velocityX = 0;
   }
-  if (controls.jump && player.onGround) {
+  if (controls.jump && (player.onGround || player.cheats.fly)) {
     player.velocityY = player.jumpForce;
   }
 

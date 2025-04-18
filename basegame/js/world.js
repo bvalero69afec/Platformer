@@ -33,7 +33,8 @@ function spawnPlayer(world, width, height, speed, jumpForce) {
     velocityY: 0,
     speed: speed,
     jumpForce: jumpForce,
-    controls: {}
+    controls: {},
+    cheats: {}
   };
   updatePlayerOnGroundStatus(world);
 }

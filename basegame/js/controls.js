@@ -7,16 +7,29 @@ function updatePlayerControls() {
   controls.jump = keysDown['ArrowUp'] || keysDown['z'] || keysDown[' '];
 }
 
+function togglePlayerCheats(key) {
+  const cheats = world.player.cheats;
+  if (key === 'g') {
+    cheats.invincible = !cheats.invincible;
+  }
+  if (key === 'f') {
+    cheats.fly = !cheats.fly;
+  }
+}
+
 document.addEventListener('keydown', function(event) {
-  if (!keysDown[event.key]) {
-    keysDown[event.key] = true;
+  const key = event.key;
+  if (!keysDown[key]) {
+    keysDown[key] = true;
     updatePlayerControls();
+    togglePlayerCheats(key);
   }
 });
 
 document.addEventListener('keyup', function(event) {
-  if (keysDown[event.key]) {
-    keysDown[event.key] = false;
+  const key = event.key;
+  if (keysDown[key]) {
+    keysDown[key] = false;
     updatePlayerControls();
   }
 });
