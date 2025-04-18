@@ -1,8 +1,8 @@
-function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap, maxObstacleGap,
-                           obstacleAreaX, obstacleAreaWidth) {
+function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap, maxObstacleGap) {
   world.obstacles = [];
   const randomGapMax = maxObstacleGap - minObstacleGap;
-  const obstacleXMax = obstacleAreaX + obstacleAreaWidth - obstacleWidth;
+  const obstacleAreaX = world.startAreaWidth;
+  const obstacleXMax = obstacleAreaX + world.obstacleAreaWidth - obstacleWidth;
   let obstacleX = obstacleAreaX; // Start at the beginning of the obstacle area
   while (true) {
     const randomGap = getRandomArbitrary(0, randomGapMax);

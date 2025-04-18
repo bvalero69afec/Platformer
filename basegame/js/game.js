@@ -46,6 +46,9 @@ let gameState;
 function initGame() {
   world = {
     width: START_AREA_WIDTH + OBSTACLE_AREA_WIDTH + END_AREA_WIDTH, // Total width of the world
+    startAreaWidth: START_AREA_WIDTH,
+    obstacleAreaWidth: OBSTACLE_AREA_WIDTH,
+    endAreaWidth: END_AREA_WIDTH,
     height: canvas.height,
     gravity: GRAVITY,
     groundY: GROUND_Y,
@@ -54,8 +57,7 @@ function initGame() {
     spawnpointY: SPAWNPOINT_Y,
   };
 
-  generateObstacles(world, OBSTACLE_WIDTH, OBSTACLE_HEIGHT, MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP,
-                    START_AREA_WIDTH, OBSTACLE_AREA_WIDTH);
+  generateObstacles(world, OBSTACLE_WIDTH, OBSTACLE_HEIGHT, MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP);
 
   spawnPlayer(world, PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_SPEED, PLAYER_JUMP_FORCE);
 
@@ -70,12 +72,12 @@ function updateGame() {
 
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-// Calculate the camera position based on the player's position
+  // Calculate the camera position based on the player's position
   const playerCameraX = calculatePlayerCameraX(world, canvas.width, CAMERA_CANVAS_CENTER_X_OFFSET);
   // Draw the world using the camera position
   drawWorld(ctx, world, playerCameraX, 0);
 
-  const score = calculatePlayerScore(world, START_AREA_WIDTH, OBSTACLE_AREA_WIDTH);
+  const score = calculatePlayerScore(world);
   const scoreFinalText = SCORE_TEXT.replace('{score}', score);
   drawText(ctx, scoreFinalText, SCORE_TEXT_FONT, SCORE_TEXT_STYLE, SCORE_TEXT_ALIGN, SCORE_TEXT_BASELINE,
            SCORE_TEXT_X, SCORE_TEXT_Y);
