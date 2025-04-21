@@ -72,6 +72,7 @@ function updateGame() {
 
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
   // Calculate the camera position based on the player's position
   const playerCameraX = calculatePlayerCameraX(world, canvas.width, PLAYER_CAMERA_CENTER_OFFSET_X);
   // Draw the world using the camera position

@@ -17,7 +17,7 @@ function handlePlayerLeftBorderCollision(world) {
   // Check if the player is moving left
   if (player.velocityX < 0) {
     if (player.x + player.velocityX < 0) { // Check if the player is going out of bounds
-      player.velocityX = -player.x; // Prevent the player from going out of bounds
+      player.velocityX = 0 - player.x; // Prevent the player from going out of bounds
     }
   }
 }

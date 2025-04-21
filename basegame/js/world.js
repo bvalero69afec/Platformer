@@ -1,5 +1,6 @@
 function generateObstacles(world, obstacleWidth, obstacleHeight, minObstacleGap, maxObstacleGap) {
   world.obstacles = [];
+  
   const randomGapMax = maxObstacleGap - minObstacleGap;
   const obstacleAreaX = world.startAreaWidth;
   const obstacleXMax = obstacleAreaX + world.obstacleAreaWidth - obstacleWidth;
