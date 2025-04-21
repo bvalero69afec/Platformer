@@ -1,21 +1,18 @@
 function calculatePlayerCameraX(world, cameraWidth, cameraCenterOffsetX) {
   const player = world.player;
-  const cameraCenterX = cameraWidth  / 2;
-  const playerXCameraStartPanning = cameraCenterX + cameraCenterOffsetX;
+
+  const cameraCenterX = cameraWidth / 2;
+  const cameraStartPanningLocalX = cameraCenterX + cameraCenterOffsetX;
+  const cameraStartPanningWorldX = 0 + cameraStartPanningLocalX;
   const cameraXMax = Math.max(world.width, cameraWidth) - cameraWidth;
-  const playerXCameraEndPanning = cameraXMax + playerXCameraStartPanning;
+  const cameraEndPanningWorldX = cameraXMax + cameraStartPanningLocalX;
 
-  let playerXClamped;
-  if (player.x < playerXCameraStartPanning) {
-    playerXClamped = playerXCameraStartPanning;
-  } else if (player.x > playerXCameraEndPanning) {
-    playerXClamped = playerXCameraEndPanning;
-  } else {
-    playerXClamped = player.x;
-  }
+  const playerXClamped = mathClamp(player.x, cameraStartPanningWorldX, cameraEndPanningWorldX);
+  // playerXClamped is guaranteed to be within [cameraStartPanningWorldX, cameraEndPanningWorldX],
+  // so (playerXClamped - cameraStartPanningLocalX) maps directly to [0, cameraXMax]
+  const cameraX = playerXClamped - cameraStartPanningLocalX;
 
-  // playerXClamped is now guaranteed in [playerXCameraStartPanning, playerXCameraEndPanning], so (playerXClamped - playerXCameraStartPanning) is in [0, cameraXMax]
-  return playerXClamped - playerXCameraStartPanning;
+  return cameraX;
 }
 
 
