@@ -16,7 +16,7 @@ Base game:
   When the player collide with the bottom border, it's loss (he should not because the floor is continous for the moment).
 - When the player collide with the obstacle, it's loss.
 - For game logic and readability, we should use the origin at the bottom left of the canvas for x and y position, so it's start at 0 there. Not the top left one which is used for the canvas. We should translate the position between them.
-- Do movement physics using a velocity vector. Then add it to the player position.
+- Do simple movement physics using a velocity vector. Then add it to the player position.
   The player can go left side, right side and jump.
   The world/player are continually under gravity.
 - Use a simple discrete collision detection.
@@ -24,7 +24,10 @@ Base game:
 
 Improvement:
 - Big level with camera panning.
-- Platform generated at different height (no continous floor).
-- Sprites (can be simplified at the beginning with a bounding box).
-- Replace square obstacle with triangle obstacle (spike).
+- Score.
+- Cheats.
+
+- Do more realistic physics and base it on time not on frame.
 - Use a continous collision detection (prevent passing through object/missing collision if the updated player position jump over the obstacle).
+- Sprites.
+- Platform generated at different height (no continous floor).
